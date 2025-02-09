@@ -1,0 +1,31 @@
+@url = http://127.0.0.1:8000
+@path = auth
+@token = eyJhbGciOiJIUzI1NiJ9.eyJleHBpcmVzQXQiOiIyMDI1LTAyLTA4VDE0OjU2OjM0LjMzMloiLCJyb2xlIjoiVVNFUiIsInNlc3Npb25JZCI6IjU1ZTc0ZTQwLWM4MmItNGQ3NC1iYjYzLTNkYmMyMWYxYzE5ZiIsImlhdCI6MTczOTAyMjk5NCwiZXhwIjoxNzM5NjI3Nzk0fQ.h_PX03Awpxy4e8oLVX-3Rws2L-Y76LHXcH5c8GrfR_o
+
+###
+POST {{url}}/{{path}}/login
+Content-Type: application/json
+
+{
+  "email": "user6@gmail.com",
+  "password": "12345678"
+}
+
+###
+POST {{url}}/{{path}}/register
+Content-Type: application/json
+
+{
+  "name": "user1",
+  "email": "user1@gmail.com",
+  "phone": "081234512345",
+  "address": "jl. superman",
+  "password": "12345678"
+}
+
+
+###
+POST {{url}}/{{path}}/check
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
