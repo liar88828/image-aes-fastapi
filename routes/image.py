@@ -1,46 +1,25 @@
 from io import BytesIO
-from typing import Annotated
-
-from fastapi import File, UploadFile, HTTPException, APIRouter, Request
+from fastapi import UploadFile, HTTPException, APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-
-from service.image import ImageController, UPLOAD_FOLDER, ENCRYPTION_PASSWORD
+from service.image import ImageController, ENCRYPTION_PASSWORD
 
 router = APIRouter(prefix="/images", tags=["image"])
 image_controller = ImageController()
 
-
-@router.post("/files/")
-async def create_file(file: Annotated[bytes | None, File()] = None):
-    if not file:
-        return {"message": "No file sent"}
-    else:
-        return {"file_size": len(file)}
-
-
-@router.post("/uploadfile/")
-async def create_upload_file(file: UploadFile | None = None):
-    if not file:
-        return {"message": "No upload file sent"}
-    else:
-        return {"filename": file.filename}
-
-
-@router.post("/save-image/")
+@router.post("/")
 async def save_image(file: UploadFile, request: Request):
     password = image_controller.password_image(ENCRYPTION_PASSWORD)
     encrypted_file_path = await image_controller.encrypt_image(
         file=file,
         password=password,
     )
-
     return JSONResponse(content={"message": "File saved successfully",
                                  "file_path": str(encrypted_file_path),
-                                 'full_path': f"{str(request.base_url)}images/get-image/{str(file.filename)}"
+                                 'full_path': f"{str(request.base_url)}images/{str(file.filename)}"
                                  })
 
 
-@router.get("/get-image/{filename}")
+@router.get("/{filename}")
 async def get_image(filename: str):
     try:
         password = image_controller.password_image(ENCRYPTION_PASSWORD)
@@ -68,25 +47,13 @@ async def get_image(filename: str):
         raise HTTPException(status_code=500, detail=f"Could not decrypt file: {str(e)}")
 
 
-@router.get("/show/")
-async def list_files():
-    """Custom endpoint to list files in the /public/ directory."""
-    # files = [f.name for f in UPLOAD_FOLDER.iterdir() if f.is_file()]
-    files = [file.name for file in UPLOAD_FOLDER.glob("*.enc")]
-    return JSONResponse(content=files)
-    # file_links = [f'<a href="/public/{file}">{file}</a>' for file in files]
-    # return HTMLResponse(content="<br>".join(file_links))
-
-
 # Serve static files for uploaded images
 @router.get("/")
 async def main():
     content = """
 <body>
- 
-
      <h1>Upload and Save Image</h1>
-    <form id="uploadForm" action="/images/save-image/" method="post" enctype="multipart/form-data">
+    <form id="uploadForm" action="/images" method="post" enctype="multipart/form-data">
         <label for="file">Choose an image:</label>
         <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.gif" required>
         <small>Allowed extensions: .jpg, .jpeg, .png, .gif (Max size: 5MB)</small>
@@ -155,7 +122,7 @@ async def main():
                 // Add each image to the gallery
                 fileList.forEach(file => {
                     const filename = file.replace('.enc', ''); // Remove ".enc" extension
-                    const imageUrl = `/images/get-image/${filename}`;// is request api
+                    const imageUrl = `/images/${filename}`;// is request api
                     const img = document.createElement('img');
                     img.src = imageUrl;
                     img.alt = filename;
