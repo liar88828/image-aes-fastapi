@@ -4,8 +4,8 @@ import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
+from database.table.user import UserTable
 from key import settings
-from schema.user import UserDB
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
@@ -22,9 +22,9 @@ def create_jwt(data: dict, expires_delta: timedelta = None):
     return jwt.encode(to_encode, settings.JWT_SECRET_ACCESS_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-def verify_jwt(token: str = Depends(oauth2_scheme)) -> UserDB:
+def verify_jwt(token: str = Depends(oauth2_scheme)) -> UserTable:
     try:
-        payload: UserDB = jwt.decode(token, settings.JWT_SECRET_ACCESS_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload: UserTable = jwt.decode(token, settings.JWT_SECRET_ACCESS_KEY, algorithms=[settings.JWT_ALGORITHM])
         # username = payload.get("username")
         if not payload:
             raise HTTPException(status_code=401, detail="Invalid token payload")

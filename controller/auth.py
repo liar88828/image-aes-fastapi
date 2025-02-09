@@ -1,11 +1,10 @@
 from fastapi import HTTPException
 from passlib.hash import bcrypt as pwd_context
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlmodel import select
 from controller.user import UserController
+from database.connect import SessionDep
 from database.table.user import UserTable
-from schema.user import UserCreate, UserLogin
+from schema.user import UserLogin
 from service.jwt_token import verify_jwt
 
 
@@ -19,15 +18,15 @@ def verify_password(plain_password: str, hashed_password: str):
 
 # noinspection PyMethodMayBeStatic
 class AuthController(UserController):
-    async def authenticate(self, db: AsyncSession, token: str):
+    async def authenticate(self, db: SessionDep, token: str):
         user = verify_jwt(token)
         response = await db.execute(select(UserTable).where(user.id == UserTable.id))
-        exist =   response.scalar_one_or_none()
+        exist = response.scalar_one_or_none()
         if not exist:
             raise HTTPException(status_code=404, detail="User not found")
         return exist
 
-    async def register(self, db: AsyncSession, user: UserCreate):
+    async def register(self, db: SessionDep, user: UserTable):
 
         email_exist = await self.find_by_email(db, user.email)
         if email_exist:
@@ -39,7 +38,7 @@ class AuthController(UserController):
         user_dict = await self.user_convert(user_db)
         return user_dict
 
-    async def login(self, db: AsyncSession, user: UserLogin):
+    async def login(self, db: SessionDep, user: UserLogin):
 
         user_db = await self.find_by_email(db, user.email)
         if not user_db:

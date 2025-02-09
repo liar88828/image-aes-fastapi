@@ -1,5 +1,5 @@
 @url = http://127.0.0.1:8000
-@path = users
+@path = /users
 
 ###
 GET {{url}}/{{path}}
@@ -35,5 +35,44 @@ Content-Type: application/json
 
 ###
 DELETE {{url}}/{{path}}/1
+Content-Type: application/json
+
+
+
+###
+POST {{url}}/user-new
+Content-Type: application/json
+
+{
+  "name": "user1 update",
+  "email": "user1@gmail.com",
+  "phone": "081234512345",
+  "address": "jl. supartman",
+  "password": "12345678"
+}
+
+###
+GET {{url}}/user-new
+Content-Type: application/json
+
+###
+GET {{url}}/user-new/11
+Content-Type: application/json
+
+
+###
+PUT {{url}}/user-new/11
+Content-Type: application/json
+
+{
+  "name": "user1 update xxxxxx",
+  "email": "user1@gmail.com",
+  "phone": "081234512345",
+  "address": "jl. supartman",
+  "password": "12345678"
+}
+
+###
+DELETE {{url}}/user-new/11
 Content-Type: application/json
 

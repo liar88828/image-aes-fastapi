@@ -1,8 +1,17 @@
-from fastapi import FastAPI, Request
+from typing import Annotated
+
+from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from routes import auth, image, user
+from sqlmodel import SQLModel, Field, select
+
+from controller.userDB import userDB_controller
+from database.connect import create_db_and_tables, SessionDep
+from database.table.userDB import UserDB
+from routes import user,user_route
+from schema.response import Response
 from service.image import UPLOAD_FOLDER
 
 app = FastAPI()
@@ -37,12 +46,22 @@ async def add_process_time_header(request: Request, call_next):
 
 
 app.include_router(user.router)
-app.include_router(auth.router)
-app.include_router(image.router)
+app.include_router(user_route.router)
+
+
+# app.include_router(auth.router)
+# app.include_router(image.router)
+
+
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
+
 
 @app.get("/")
 async def index_test():
     return {'msg': 'hello world'}
+
 
 @app.get("/public-image/")
 async def list_encrypted_images():
@@ -50,6 +69,8 @@ async def list_encrypted_images():
     files = [file.name for file in UPLOAD_FOLDER.glob("*.enc")]
     return JSONResponse(content=files)
 
-@app.get("/test-db")
+
+@app.get("/init")
 async def read_root():
+    create_db_and_tables()
     return {"message": "Database session is ready"}

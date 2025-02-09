@@ -1,33 +1,27 @@
 from typing import Annotated
-
+from sqlmodel import Session, SQLModel, create_engine
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 
-from key import settings
+sqlite_file_name = "database.db"
+sqlite_url = f"sqlite:///{sqlite_file_name}"
+connect_args = {"check_same_thread": False}
 
-engine = create_async_engine(settings.DATABASE_URL,
-                             echo=True
-                             # connect_args={"check_same_thread": False}
-                             )
-# noinspection PyTypeChecker
-async_session = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    # autocommit=False,
-    # autoflush=False
+engine = create_engine(
+    # url=settings.DATABASE_URL,
+    url=sqlite_url,
+    connect_args=connect_args,
+    # connect_args={"check_same_thread": False}
 )
 
 
-def get_db():
-    # async with async_session() as session:
-    #     yield session
-    db = async_session()
-    try:
-        yield db
-    finally:
-        db.close()
+# noinspection PyTypeChecker
+def get_session():
+    with Session(engine) as session:
+        yield session
 
 
-db_dependency = Annotated[AsyncSession, Depends(get_db)]
+def create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
