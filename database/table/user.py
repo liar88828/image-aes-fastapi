@@ -16,7 +16,3 @@ class UserTable(Base):
     password = Column(String(100), nullable=False)
     role = Column(String(100), nullable=False, default=RoleUser.User)
     # Relationship to products
-    products = relationship(
-        "ProductTable",  # must be same with name class
-        back_populates="user"  ## must be same with name column
-    )

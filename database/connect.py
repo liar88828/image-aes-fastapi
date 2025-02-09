@@ -1,12 +1,10 @@
 from typing import Annotated
-
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-
 from key import settings
 
-engine = create_async_engine(settings.DATABASE_URL,
+engine = create_async_engine(url=settings.DATABASE_URL_SQLITE,
                              echo=True
                              # connect_args={"check_same_thread": False}
                              )
